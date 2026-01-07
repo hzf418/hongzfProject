@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词消消乐</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* 蓝白色调配色方案 */
+        :root {
+            --primary-blue: #3b82f6;
+            --primary-light: #93c5fd;
+            --primary-dark: #1d4ed8;
+            --secondary-blue: #06b6d4;
+            --secondary-light: #bfdbfe;
+            --success-color: #10b981;
+            --text-dark: #1e293b;
+            --text-light: #334155;
+            --bg-light: #f8fafc;
+            --card-bg: white;
+            --card-border: #e2e8f0;
+            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        /* 整体页面样式 */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-light);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 20%),
+                linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(6, 182, 212, 0.03) 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 动态装饰元素 */
+        .decoration {
+            position: absolute;
+            z-index: -1;
+            opacity: 0.7;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .decoration.circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-light) 0%, transparent 100%);
+            filter: blur(60px);
+            top: -50px;
+            left: -50px;
+        }
+        
+        .decoration.wave {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--secondary-light) 0%, transparent 100%);
+            filter: blur(40px);
+            bottom: -30px;
+            right: -30px;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        }
+        
+        .decoration.square {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, transparent 100%);
+            filter: blur(30px);
+            top: 30%;
+            right: 10%;
+            transform: rotate(45deg);
+            border-radius: 15%;
+        }
+        
+        .decoration.diamond {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--secondary-blue) 0%, transparent 100%);
+            filter: blur(40px);
+            bottom: 30%;
+            left: 10%;
+            transform: rotate(45deg);
+            border-radius: 10%;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(10px, -15px); }
+            50% { transform: translate(0, 10px); }
+            75% { transform: translate(-10px, -5px); }
+        }
+        
+        /* 标题样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header h1 {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* 游戏控制面板 */
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 850px;
+            margin-bottom: 25px;
+            padding: 18px 25px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--card-border);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .panel-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 14px;
+            min-width: 140px;
+            border: 1px solid var(--card-border);
+            transition: var(--transition);
+        }
+        
+        .panel-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .panel-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .panel-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .timer .panel-value {
+            background: linear-gradient(135deg, var(--secondary-blue), #0ea5e9);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        .score-board .panel-value {
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        /* 游戏主容器 */
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 850px;
+            width: 100%;
+            padding: 30px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            position: relative;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--card-border);
+            min-height: 550px;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.03) 0%, transparent 30%),
+                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.03) 0%, transparent 30%);
+        }
+        
+        /* 卡片基础样式 */
+        .tile {
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 16px;
+            transition: var(--transition);
+            min-height: 130px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .tile:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tile:hover::before {
+            opacity: 1;
+        }
+        
+        /* 英文卡片样式 - 蓝色调 */
+        .tile.en {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.08) 100%);
+            border-left: 4px solid var(--primary-blue);
+        }
+        
+        .tile.en .word {
+            color: var(--primary-dark);
+        }
+        
+        /* 中文卡片样式 - 绿色调 */
+        .tile.zh {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(110, 231, 183, 0.08) 100%);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .tile.zh .word {
+            color: #065f46;
+        }
+        
+        /* 选中状态 */
+        .tile.selected {
+            border: 2px solid var(--secondary-blue);
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.4);
+            z-index: 10;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+        
+        /* 已匹配卡片 */
+        .tile.matched {
+            pointer-events: none;
+            opacity: 0.8;
+            transform: scale(0.95);
+        }
+        
+        .tile.matched::after {
+            content: "✓";
+            position: absolute;
+            color: var(--success-color);
+            font-size: 50px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+        }
+        
+        /* 游戏开始遮罩 */
+        .game-start {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 24px;
+            z-index: 20;
+            transition: opacity 0.5s;
+            padding: 30px;
+        }
+        
+        .game-start h2 {
+            color: var(--text-dark);
+            font-family: 'Nunito', sans-serif;
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);
+        }
+        
+        .game-start p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            max-width: 500px;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+        
+        /* 游戏结束遮罩 */
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.97);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 24px;
+            z-index: 999;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .game-over h2 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .game-over p {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+        
+        .final-score {
+            font-size: 4rem;
+            font-weight: 800;
+            margin: 20px 0;
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .time-message {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            margin-top: 15px;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 16px 40px;
+            border-radius: 14px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            z-index: -1;
+            transition: var(--transition);
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn:hover::before {
+            transform: scale(1.05);
+        }
+        
+        .btn i {
+            font-size: 1.3rem;
+        }
+        
+        .btn-primary {
+            color: white;
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, var(--secondary-blue), #0ea5e9);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(6, 182, 212, 0.2);
+        }
+        
+        .btn-accent::before {
+            background: linear-gradient(135deg, var(--secondary-blue), #0ea5e9);
+        }
+        
+        .btn-accent:hover {
+            box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3);
+        }
+        
+        /* 规则按钮 */
+        .rules-btn {
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--card-border);
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .rules-btn:hover {
+            background: rgba(59, 130, 246, 0.05);
+            color: var(--primary-blue);
+            transform: translateY(-3px);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+        
+        /* 加载遮罩 */
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 24px;
+            z-index: 30;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #e2e8f0;
+            border-top: 5px solid var(--primary-blue);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 25px;
+        }
+        
+        .loading p {
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 游戏规则模态框 */
+        .rules-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        
+        .rules-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .rules-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--card-border);
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .rules-modal.active .rules-content {
+            transform: scale(1);
+        }
+        
+        .rules-content h2 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 2.2rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .rules-content ul {
+            padding-left: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .rules-content li {
+            margin-bottom: 18px;
+            line-height: 1.6;
+            color: var(--text-dark);
+            position: relative;
+            padding-left: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .rules-content li::before {
+            content: "•";
+            color: var(--secondary-blue);
+            font-size: 1.5rem;
+            position: absolute;
+            left: -15px;
+            top: -5px;
+        }
+        
+        .close-btn {
+            background: linear-gradient(135deg, var(--secondary-blue), #0ea5e9);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            box-shadow: 0 6px 15px rgba(6, 182, 212, 0.2);
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .close-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3);
+        }
+        
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: var(--text-dark);
+            padding: 15px 35px;
+            border-radius: 14px;
+            z-index: 100;
+            transition: all 0.5s;
+            opacity: 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-light);
+            font-weight: 500;
+            text-align: center;
+            max-width: 90%;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            top: 40px;
+        }
+        
+        /* 页脚样式 - 优化版 */
+        .footer {
+            margin-top: 40px;
+            padding: 18px 25px;
+            width: 100%;
+            max-width: 850px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            border-radius: 18px;
+            box-shadow: 0 -5px 15px rgba(59, 130, 246, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .footer:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 -8px 20px rgba(59, 130, 246, 0.2);
+        }
+        
+        .footer-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer i {
+            font-size: 1.2rem;
+            animation: pulse-light 3s infinite;
+        }
+        
+        @keyframes pulse-light {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            .game-container {
+                grid-template-columns: repeat(3, 1fr);
+                padding: 20px;
+                gap: 15px;
+            }
+            
+            .control-panel {
+                flex-wrap: wrap;
+                gap: 15px;
+                justify-content: center;
+            }
+            
+            .panel-item {
+                min-width: 120px;
+                padding: 10px 15px;
+            }
+            
+            .footer {
+                margin-top: 30px;
+                padding: 15px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .game-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .panel-item {
+                min-width: 100px;
+            }
+            
+            .panel-label {
+                font-size: 0.8rem;
+            }
+            
+            .panel-value {
+                font-size: 1.4rem;
+            }
+            
+            .tile {
+                min-height: 110px;
+                padding: 15px;
+            }
+            
+            .footer {
+                margin-top: 20px;
+                padding: 12px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .footer-content {
+                gap: 6px;
+            }
+            
+            .footer i {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 动态装饰元素 -->
+    <div class="decoration circle"></div>
+    <div class="decoration wave"></div>
+    <div class="decoration square"></div>
+    <div class="decoration diamond"></div>
+    
+    <div class="header">
+        <h1>单词消消乐</h1>
+        <p>通过匹配中英文单词对来测试你的词汇量！挑战自己，看看你能在多短的时间内完成所有单词！</p>
+    </div>
+    
+    <div class="control-panel">
+        <div class="panel-item timer">
+            <div class="panel-label"><i class="fas fa-clock"></i> 总用时</div>
+            <div class="panel-value" id="time-elapsed">00:00</div>
+        </div>
+        
+        <div class="panel-item score-board">
+            <div class="panel-label"><i class="fas fa-star"></i> 得分</div>
+            <div class="panel-value" id="score">0</div>
+        </div>
+        
+        <div class="panel-item progress">
+            <div class="panel-label"><i class="fas fa-chart-line"></i> 已完成</div>
+            <div class="panel-value" id="progress">0%</div>
+        </div>
+        
+        <div class="rules-btn-container">
+            <button class="rules-btn" id="rules-btn">
+                <i class="fas fa-book"></i> 游戏规则
+            </button>
+        </div>
+    </div>
+    
+    <div class="game-container" id="gameBoard">
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>正在加载单词...</p>
+        </div>
+        
+        <div class="game-start" id="gameStart">
+            <h2>单词记忆挑战</h2>
+            <p>匹配中英文单词对来测试你的词汇量！每次匹配成功获得20分，匹配错误扣5分。完成所有单词对挑战你的极限速度！</p>
+            <button class="btn btn-accent" id="start-btn">
+                <i class="fas fa-play"></i> 开始挑战
+            </button>
+        </div>
+        
+        <!-- 卡片将由JS动态生成 -->
+    </div>
+    
+    <div class="game-over" id="gameOver" style="display: none;">
+        <h2 id="gameOverTitle">挑战成功！</h2>
+        <p>你已掌握所有单词！</p>
+        <div class="final-score" id="final-score">0</div>
+        <p class="time-message">总用时: <span id="total-time">00:00</span></p>
+        <button class="btn btn-primary" id="restart-btn">
+            <i class="fas fa-redo"></i> 再来一局
+        </button>
+    </div>
+
+    <!-- 游戏规则模态框 -->
+    <div class="rules-modal" id="rules-modal">
+        <div class="rules-content">
+            <h2>游戏规则</h2>
+            <ul>
+                <li>点击卡片翻开，找到匹配的中英文单词对</li>
+                <li>每次只能翻开两张卡片</li>
+                <li>如果两张卡片匹配（一个英文单词和它的中文释义），它们会保持翻开状态</li>
+                <li>如果不匹配，两张卡片都会翻回原状</li>
+                <li>成功匹配一对单词获得20分</li>
+                <li>匹配错误扣5分</li>
+                <li>当当前屏幕上所有单词对都被匹配后，会自动加载新的单词对</li>
+                <li>持续游戏直到你匹配完单词库中的所有单词</li>
+                <li>游戏会记录你从开始到完成所有单词的总用时</li>
+            </ul>
+            <button class="close-btn" id="close-btn">我知道了</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">这是一条通知</div>
+    
+    <!-- 优化后的页脚版权信息 -->
+    <div class="footer">
+            <div class="footer-content">
+    			<span>版权所有 | 石狮市教师进修学校</span>
+                <span>作者：石狮市第二中学 洪振芳；指导老师：李涌</span>
+            </div>
+        </div>
+
+    <script>
+        // 游戏状态管理对象
+        const gameState = {
+            selectedTiles: [],      // 当前选中的卡片
+            score: 0,               // 当前得分
+            startTime: 0,           // 游戏开始时间
+            elapsedTime: 0,         // 累计游戏时间（毫秒）
+            timerInterval: null,    // 计时器引用
+            wordPairs: [],          // 所有单词对列表
+            usedWords: new Set(),   // 已使用的单词集合（用于当前棋盘）
+            matchedWords: new Set(),// 已匹配的单词集合（全局）
+            gameBoard: [],          // 游戏棋盘数据
+            gameActive: false,      // 游戏是否活跃
+            wordsLoaded: false      // 单词是否已加载
+        };
+        
+        // 初始化游戏
+        async function initializeGame() {
+            // 显示加载状态
+            document.getElementById('loading').style.display = 'flex';
+            
+            // 从文件加载单词
+            await loadWords();
+            
+            // 隐藏加载状态
+            document.getElementById('loading').style.display = 'none';
+            
+            // 初始化界面元素
+            document.getElementById('score').textContent = gameState.score;
+            updateProgress();
+            
+            // 设置事件监听器
+            document.getElementById('restart-btn').addEventListener('click', restartGame);
+            document.getElementById('rules-btn').addEventListener('click', showRules);
+            document.getElementById('close-btn').addEventListener('click', hideRules);
+            document.getElementById('rules-modal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('rules-modal')) {
+                    hideRules();
+                }
+            });
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            
+            // 初始化棋盘但不开始游戏
+            setupGameBoard();
+            renderBoard();
+        }
+        
+        /** 从文件加载单词 */
+        async function loadWords() {
+            try {
+                // 尝试从words.txt加载单词
+                const response = await fetch('words.txt');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                gameState.wordPairs = text.split('\n')
+                    .filter(line => line.trim()) // 过滤空行
+                    .map(line => {
+                        const [enWord, zhMeaning] = line.split(',').map(s => s.trim());
+                        return { enWord, zhMeaning }; // 分别存储英文单词和中文释义
+                    });
+                
+                // 检查是否加载到足够的单词
+                if (gameState.wordPairs.length < 4) {
+                    throw new Error('单词数量不足，至少需要4对单词');
+                }
+                
+                gameState.wordsLoaded = true;
+                console.log(`成功从文件加载 ${gameState.wordPairs.length} 个单词对`);
+            } catch (error) {
+                console.error('单词加载失败:', error);
+                alert('单词加载失败，将使用内置单词库。\n如果在本地运行，建议使用服务器环境加载外部文件。');
+                
+                // 使用内置单词库作为备用
+                gameState.wordPairs = [
+                    { enWord: "useful", zhMeaning: "有用的" },
+                    { enWord: "wash", zhMeaning: "洗" },
+                    { enWord: "outside", zhMeaning: "外面" },
+                    { enWord: "cycle", zhMeaning: "循环" },
+                    { enWord: "quick", zhMeaning: "快的" },
+                    { enWord: "shower", zhMeaning: "淋浴" },
+                    { enWord: "off", zhMeaning: "关" },
+                    { enWord: "tap", zhMeaning: "水龙头" },
+                    { enWord: "while", zhMeaning: "当…时" },
+                    { enWord: "brush", zhMeaning: "刷" },
+                    { enWord: "tooth", zhMeaning: "牙" },
+                    { enWord: "reuse", zhMeaning: "重复用" },
+                    { enWord: "matter", zhMeaning: "重要" },
+                    { enWord: "fact", zhMeaning: "事实" },
+                    { enWord: "valuable", zhMeaning: "宝贵的" },
+                    { enWord: "enough", zhMeaning: "足够的" },
+                    { enWord: "once", zhMeaning: "一次" },
+                    { enWord: "must", zhMeaning: "必须" },
+                    { enWord: "collect", zhMeaning: "收集" },
+                    { enWord: "dig", zhMeaning: "挖" },
+                    { enWord: "worry", zhMeaning: "担心" },
+                    { enWord: "story", zhMeaning: "故事" },
+                    { enWord: "cover", zhMeaning: "覆盖" },
+                    { enWord: "coastline", zhMeaning: "海岸线" },
+                    { enWord: "than", zhMeaning: "比" },
+                    { enWord: "thousand", zhMeaning: "一千" },
+                    { enWord: "eighty", zhMeaning: "八十" },
+                    { enWord: "sixty", zhMeaning: "六十" },
+                    { enWord: "billion", zhMeaning: "十亿" },
+                    { enWord: "per cent", zhMeaning: "百分之…" },
+                    { enWord: "land", zhMeaning: "陆地" },
+                    { enWord: "knock", zhMeaning: "敲" },
+                    { enWord: "door", zhMeaning: "门" },
+                    { enWord: "oh", zhMeaning: "哦" },
+                    { enWord: "step", zhMeaning: "步骤" },
+                    { enWord: "litter", zhMeaning: "乱扔" }
+                ];
+                
+                gameState.wordsLoaded = true;
+                console.log(`使用内置单词库，共 ${gameState.wordPairs.length} 个单词对`);
+            }
+        }
+        
+        /** 开始游戏 */
+        function startGame() {
+            // 隐藏开始界面
+            const gameStart = document.getElementById('gameStart');
+            if (gameStart) gameStart.style.display = 'none';
+            
+            // 设置游戏状态
+            gameState.gameActive = true;
+            
+            // 开始计时
+            startTimer();
+            
+            // 重新渲染棋盘以确保点击事件绑定
+            renderBoard();
+        }
+        
+        /** 重新开始游戏 */
+        function restartGame() {
+            location.reload(true); //强制刷新页面（参数true表示强制从服务器加载）
+        }
+        
+        /** 开始计时器 */
+        function startTimer() {
+            // 清除之前的计时器
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            
+            // 记录开始时间
+            gameState.startTime = Date.now();
+            
+            // 设置新的计时器
+            gameState.timerInterval = setInterval(() => {
+                // 更新累计时间
+                gameState.elapsedTime = Date.now() - gameState.startTime;
+                
+                // 格式化为 MM:SS
+                const minutes = Math.floor(gameState.elapsedTime / 60000);
+                const seconds = Math.floor((gameState.elapsedTime % 60000) / 1000);
+                const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // 更新UI
+                const timeElement = document.getElementById('time-elapsed');
+                if (timeElement) timeElement.textContent = formattedTime;
+            }, 1000);
+        }
+        
+        /** 初始化游戏棋盘 */
+        function setupGameBoard() {
+            const boardSize = 4; // 4x4的棋盘
+            const neededPairs = boardSize * boardSize / 2; // 需要的单词对数
+            
+            // 获取未匹配的单词对
+            const availablePairs = gameState.wordPairs.filter(pair => 
+                !gameState.matchedWords.has(pair.enWord)
+            );
+            
+            console.log(`可用单词对: ${availablePairs.length}`);
+            
+            // 检查可用单词对数量
+            if (availablePairs.length === 0) {
+                // 如果没有可用单词，游戏结束
+                endGame(true);
+                return;
+            }
+            
+            // 计算实际能使用的单词对数
+            const actualPairs = Math.min(neededPairs, availablePairs.length);
+            
+            // 随机选择单词对
+            const selectedPairs = [];
+            gameState.usedWords.clear(); // 清空当前使用的单词
+            
+            while (selectedPairs.length < actualPairs) {
+                const randomIndex = Math.floor(Math.random() * availablePairs.length);
+                const pair = availablePairs[randomIndex];
+                
+                // 确保该单词未被使用（在当前棋盘）
+                if (!gameState.usedWords.has(pair.enWord)) {
+                    selectedPairs.push(pair);
+                    gameState.usedWords.add(pair.enWord);
+                }
+                
+                // 从可用对中移除已选对，避免重复选择
+                availablePairs.splice(randomIndex, 1);
+            }
+            
+            console.log(`当前棋盘使用单词对: ${selectedPairs.length}`);
+            
+            // 创建棋盘数据
+            const allTiles = [];
+            selectedPairs.forEach(pair => {
+                // 为每个单词创建中英文两个卡片
+                allTiles.push({ 
+                    word: pair.enWord, 
+                    meaning: pair.zhMeaning, 
+                    type: 'en', 
+                    matched: false 
+                });
+                allTiles.push({ 
+                    word: pair.zhMeaning, 
+                    meaning: pair.enWord, 
+                    type: 'zh', 
+                    matched: false 
+                });
+            });
+            
+            // 计算剩余空格数
+            const emptySpaces = boardSize * boardSize - allTiles.length;
+            
+            // 添加空卡片填充剩余空间
+            for (let i = 0; i < emptySpaces; i++) {
+                allTiles.push({
+                    word: '',
+                    meaning: '',
+                    type: 'empty',
+                    matched: true // 空卡片默认为已匹配
+                });
+            }
+            
+            // 打乱卡片顺序
+            shuffleArray(allTiles);
+            
+            // 填充棋盘
+            gameState.gameBoard = [];
+            for (let i = 0; i < boardSize; i++) {
+                const row = [];
+                for (let j = 0; j < boardSize; j++) {
+                    row.push(allTiles[i * boardSize + j]);
+                }
+                gameState.gameBoard.push(row);
+            }
+        }
+        
+        /** Fisher-Yates 洗牌算法 */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        
+        /** 渲染游戏界面 */
+        function renderBoard() {
+            const boardElement = document.getElementById('gameBoard');
+            
+            // 清空旧内容，保留加载、开始和结束界面
+            const loading = document.getElementById('loading');
+            const gameStart = document.getElementById('gameStart');
+            
+            boardElement.innerHTML = '';
+            if (loading && !gameState.gameActive) boardElement.appendChild(loading);
+            if (gameStart && !gameState.gameActive) boardElement.appendChild(gameStart);
+            
+            // 渲染棋盘
+            gameState.gameBoard.forEach((row, rowIndex) => {
+                row.forEach((item, colIndex) => {
+                    const tile = createTileElement(item, rowIndex, colIndex);
+                    boardElement.appendChild(tile);
+                });
+            });
+            
+            // 检查是否所有卡片都已匹配
+            checkAllMatched();
+        }
+        
+        /** 创建单个卡片元素 */
+        function createTileElement(item, row, col) {
+            const tile = document.createElement('div');
+            
+            // 处理空卡片
+            if (item.type === 'empty') {
+                tile.className = 'tile empty';
+                tile.style.visibility = 'hidden'; // 隐藏空卡片
+                return tile;
+            }
+            
+            tile.className = `tile ${item.type}${item.matched ? ' matched' : ''}`;
+            tile.dataset.row = row;
+            tile.dataset.col = col;
+            
+            // 根据类型显示不同内容
+            tile.innerHTML = `<div class="word">${item.word}</div>`;
+        
+            if (!item.matched && gameState.gameActive) {
+                tile.addEventListener('click', handleTileClick);
+            }
+            return tile;
+        }
+        
+        /** 处理卡片点击事件 */
+        function handleTileClick(event) {
+            const tile = event.target.closest('.tile');
+            if (!tile || tile.classList.contains('matched') || tile.classList.contains('empty')) return;
+        
+            const row = parseInt(tile.dataset.row);
+            const col = parseInt(tile.dataset.col);
+            const currentItem = gameState.gameBoard[row][col];
+        
+            // 检查是否已经选中了自己
+            const isAlreadySelected = gameState.selectedTiles.some(
+                tile => tile.row === row && tile.col === col
+            );
+            
+            if (isAlreadySelected) return;
+        
+            // 更新选中状态
+            tile.classList.add('selected');
+            gameState.selectedTiles.push({ row, col, item: currentItem });
+        
+            // 当选中两个卡片时进行验证
+            if (gameState.selectedTiles.length === 2) {
+                validateMatch();
+                clearSelection();
+            }
+        }
+        
+        /** 验证匹配 */
+        function validateMatch() {
+            const [first, second] = gameState.selectedTiles;
+            
+            // 验证是否为中英组合
+            if (first.item.type === second.item.type) {
+                showNotification('请选择中英文组合！');
+                return;
+            }
+        
+            // 强化匹配验证逻辑
+            const isMatch = (first.item.type === 'en' && first.item.meaning === second.item.word) ||
+                            (second.item.type === 'en' && second.item.meaning === first.item.word);
+        
+            if (isMatch) {
+                // 确保始终记录英文单词
+                const enWord = first.item.type === 'en' ? first.item.word : second.item.word;
+                if (!gameState.matchedWords.has(enWord)) {
+                    gameState.matchedWords.add(enWord);
+                    console.log(`已匹配单词: ${enWord}，当前进度: ${gameState.matchedWords.size}/${gameState.wordPairs.length}`);
+                }
+        
+                updateMatchedTiles();
+                updateScore(20);
+                updateProgress();
+                
+                // 立即触发全局检查
+                checkAllMatched(true); // 传递立即检查标志
+            } else {
+                updateScore(-5);
+                showNotification('匹配错误，扣5分！');
+                
+                // 重置错误卡片的匹配状态
+                setTimeout(() => {
+                    gameState.selectedTiles.forEach(({ row, col }) => {
+                        gameState.gameBoard[row][col].matched = false;
+                    });
+                    renderBoard();
+                }, 1000);
+            }
+        }
+        
+        /** 更新已匹配的卡片状态 */
+        function updateMatchedTiles() {
+            gameState.selectedTiles.forEach(({ row, col }) => {
+                gameState.gameBoard[row][col].matched = true;
+            });
+            renderBoard();
+        }
+        
+        /** 清除选中状态 */
+        function clearSelection() {
+            gameState.selectedTiles = [];
+        }
+        
+        /** 更新得分 */
+        function updateScore(points) {
+            gameState.score = Math.max(0, gameState.score + points);
+            const scoreElement = document.getElementById('score');
+            if (scoreElement) scoreElement.textContent = gameState.score;
+        }
+        
+        /** 更新进度 */
+        function updateProgress() {
+            const matchedCount = gameState.matchedWords.size;
+            const totalCount = gameState.wordPairs.length;
+            const progress = Math.min(100, Math.round((matchedCount / totalCount) * 100));
+            
+            console.log(`[进度更新] 已匹配 ${matchedCount}/${totalCount} (${progress}%)`);
+            
+            const progressElement = document.getElementById('progress');
+            if (progressElement) {
+                progressElement.textContent = `${progress}%`;
+                // 当进度100%时强制触发检查
+                if (progress === 100) {
+                    setTimeout(() => checkAllMatched(true), 100);
+                }
+            }
+        }
+        
+        /** 检查所有卡片是否匹配 */
+        function checkAllMatched(immediate = false) {
+            if (!gameState.gameActive) return;
+        
+            // 添加双重检查机制
+            const checkFinal = () => {
+                // 检查当前棋盘状态
+                const currentBoardMatched = gameState.gameBoard.every(row => 
+                    row.every(tile => tile.matched || tile.type === 'empty')
+                );
+                
+                // 检查全局匹配状态
+                const allWordsMatched = gameState.matchedWords.size === gameState.wordPairs.length;
+                
+                console.log(`棋盘完成: ${currentBoardMatched}, 全局完成: ${allWordsMatched}`);
+        
+                if (allWordsMatched) {
+                    // 直接触发完成
+                    endGame(true);
+                } else if (currentBoardMatched) {
+                    showNotification('太棒了！继续挑战下一组单词！');
+                    setTimeout(() => {
+                        setupGameBoard();
+                        renderBoard();
+                        // 加载新棋盘后再次检查
+                        setTimeout(() => checkAllMatched(), 100);
+                    }, 2000);
+                }
+            };
+        
+            // 根据情况立即或延迟执行
+            immediate ? checkFinal() : setTimeout(checkFinal, 300);
+        }
+        
+        /** 结束游戏 */
+        function endGame(isComplete = false) {
+            // 确保状态更新
+            gameState.gameActive = false;
+            clearInterval(gameState.timerInterval);
+        
+            // 安全获取元素
+            const gameOverElement = document.getElementById('gameOver');
+            const gameStartElement = document.getElementById('gameStart');
+            
+            if (!gameOverElement) {
+                console.error("未找到gameOver元素！");
+                return;
+            }
+            
+            // 更新界面显示
+            gameOverElement.style.display = 'flex';
+            gameOverElement.style.zIndex = '999';
+            
+            // 更新最终得分
+            document.getElementById('final-score').textContent = gameState.score;
+            
+            if (isComplete) {
+                // 更新完成信息
+                document.getElementById('gameOverTitle').textContent = '挑战成功！🎉';
+                
+                const timeElement = document.getElementById('total-time');
+                if (timeElement) {
+                    const minutes = Math.floor(gameState.elapsedTime / 60000);
+                    const seconds = Math.floor((gameState.elapsedTime % 60000) / 1000);
+                    timeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }
+            
+            // 隐藏其他界面
+            if (gameStartElement) gameStartElement.style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        /** 显示游戏规则 */
+        function showRules() {
+            const rulesModal = document.getElementById('rules-modal');
+            if (rulesModal) {
+                rulesModal.classList.add('active');
+            }
+        }
+        
+        /** 隐藏游戏规则 */
+        function hideRules() {
+            const rulesModal = document.getElementById('rules-modal');
+            if (rulesModal) {
+                rulesModal.classList.remove('active');
+            }
+        }
+        
+        /** 显示通知 */
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 启动游戏
+        window.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>

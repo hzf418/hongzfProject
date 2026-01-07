@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能随堂测试系统</title>
+    <style>
+        :root {
+            --primary: #5e72e4;
+            --success: #2dce89;
+            --danger: #f5365c;
+            --light: #f8f9fa;
+            --dark: #32325d;
+        }
+
+        body {
+            font-family: 'PingFang SC', '微软雅黑', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* 悬浮倒计时 */
+        .floating-timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(94, 114, 228, 0.9);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+
+        .floating-timer::before {
+            content: "⏳";
+            margin-right: 10px;
+            font-size: 1.4em;
+        }
+
+        .floating-timer.urgent {
+            background: rgba(245, 54, 92, 0.9);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 80px auto 0; /* 顶部留出悬浮计时器空间 */
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary);
+            position: relative;
+        }
+
+        .score-display {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ff4757;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: rgba(255,71,87,0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            animation: scorePop 0.5s ease;
+            display: none;
+        }
+
+        @keyframes scorePop {
+            0% { transform: translateY(-50%) scale(0); }
+            80% { transform: translateY(-50%) scale(1.2); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+
+        .question-container {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background: var(--light);
+            transition: all 0.3s ease;
+        }
+
+        .question-container.correct {
+            border-left: 4px solid var(--success);
+            background: rgba(45, 206, 137, 0.05);
+        }
+
+        .question-container.wrong {
+            border-left: 4px solid var(--danger);
+            background: rgba(245, 54, 92, 0.05);
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .option:hover {
+            transform: translateY(-2px);
+        }
+
+        .export-btn {
+            background: var(--success);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 1rem;
+            transition: all 0.3s;
+        }
+
+        #submitBtn {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            font-size: 1.1em;
+        }
+
+        /* 新增版权样式 */
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <!-- 悬浮倒计时 -->
+    <div class="floating-timer" id="floatingTimer">05:00</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📚 智能随堂测试系统
+                <span class="score-display" id="scoreDisplay"></span>
+            </h1>
+            <p>当前题库：<span id="questionCount">0</span>题 | 本次测试：<span id="testCount">0</span>题
+                <span id="exportArea" style="display:none">
+                    <span class="export-btn" onclick="exportWrongQuestions()">导出错题</span>
+                </span>
+            </p>
+        </div>
+        <div id="quizArea"></div>
+        <button id="submitBtn" onclick="calculateScore()">提交答案</button>
+        
+        
+        <div class="copyright">
+        			<p>© 2025 石狮市教师进修学校</p>
+                    <p>作者：石狮市第二中学 洪振芳；指导老师：李涌</p>
+         </div>
+    </div>
+
+    <script>
+		//题目文件在这里修改
+        const CONFIG = {
+            questionFile: "questions.txt",
+            testCount: 10,
+            debugMode: false
+        };
+
+        let allQuestions = [];
+        let currentTest = [];
+        let timerInterval;
+        let wrongQuestions = [];
+
+        window.onload = async () => {
+            try {
+                const response = await fetch(CONFIG.questionFile);
+                const text = await response.text();
+                allQuestions = text.split('\n')
+                    .filter(line => line.trim())
+                    .map(line => {
+                        const [question, ...rest] = line.split('|').map(s => s.trim());
+                        const answer = rest.pop();
+                        return { question, options: rest, answer };
+                    });
+                
+                startNewTest();
+                document.getElementById('questionCount').textContent = allQuestions.length;
+                document.getElementById('testCount').textContent = CONFIG.testCount;
+                startTimer(300); // 5分钟倒计时
+            } catch (error) {
+                alert("题库加载失败，请检查文件是否存在");
+            }
+        };
+
+        function startNewTest() {
+            currentTest = [...allQuestions]
+                .sort(() => Math.random() - 0.5)
+                .slice(0, CONFIG.testCount);
+            renderQuestions();
+            document.getElementById('scoreDisplay').style.display = 'none';
+            document.getElementById('exportArea').style.display = 'none';
+        }
+
+        function startTimer(duration) {
+            let timer = duration;
+            const timerDisplay = document.getElementById('floatingTimer');
+            
+            timerInterval = setInterval(() => {
+                const minutes = parseInt(timer / 60, 10);
+                const seconds = parseInt(timer % 60, 10);
+                
+                timerDisplay.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                // 最后1分钟切换为紧急模式
+                if (timer <= 60) {
+                    timerDisplay.classList.add('urgent');
+                } else {
+                    timerDisplay.classList.remove('urgent');
+                }
+
+                if (--timer < 0) {
+                    clearInterval(timerInterval);
+                    calculateScore();
+                }
+            }, 1000);
+        }
+
+        function renderQuestions() {
+            const quizArea = document.getElementById('quizArea');
+            quizArea.innerHTML = currentTest.map((q, index) => `
+                <div class="question-container" data-index="${index}">
+                    <div class="question">${index + 1}. ${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((opt, i) => `
+                            <label class="option">
+                                <input type="radio" name="q${index}" value="${String.fromCharCode(65 + i)}">
+                                ${String.fromCharCode(65 + i)}. ${opt}
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" style="display:none">
+                        ✅ 正确答案：${q.answer}. ${q.options[q.answer.charCodeAt(0)-65]}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function calculateScore() {
+            clearInterval(timerInterval);
+            
+            wrongQuestions = [];
+            let correctCount = 0;
+            
+            currentTest.forEach((q, index) => {
+                const container = document.querySelector(`[data-index="${index}"]`);
+                const feedback = container.querySelector('.feedback');
+                const selected = container.querySelector('input:checked');
+                
+                feedback.style.display = 'block';
+                container.classList.add(selected?.value === q.answer ? 'correct' : 'wrong');
+                
+                if (selected?.value === q.answer) {
+                    correctCount++;
+                } else {
+                    wrongQuestions.push({
+                        ...q,
+                        userAnswer: selected?.value || '未作答'
+                    });
+                }
+            });
+
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            scoreDisplay.textContent = `${correctCount}/${CONFIG.testCount}`;
+            scoreDisplay.style.display = 'inline-block';
+            scoreDisplay.style.color = `hsl(${(correctCount/CONFIG.testCount)*120}, 100%, 45%)`;
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('exportArea').style.display = 'inline-block';
+            
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function exportWrongQuestions() {
+            if(wrongQuestions.length === 0) {
+                alert("本次测试没有错题");
+                return;
+            }
+
+            const content = wrongQuestions.map((q, index) => {
+                return `第${index + 1}题
+题目：${q.question}
+你的答案：${q.userAnswer}
+正确答案：${q.answer}. ${q.options[q.answer.charCodeAt(0)-65]}\n\n`;
+            }).join('\n');
+
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `错题集_${new Date().toLocaleDateString().replace(/\//g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>    

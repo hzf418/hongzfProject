@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语学习中心</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #00b894;
+            --light: #f8f9fa;
+            --dark: #2d3436;
+            --accent: #ff7675;
+            --reading: #0984e3;
+            --dictation: #fd79a8; /* 新增：听写模块主色调 */
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            --footer-bg: rgba(255, 255, 255, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Segoe UI', '微软雅黑', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .website-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .website-logo i {
+            background: linear-gradient(135deg, var(--primary), #a29bfe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 500;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--primary);
+            border-color: rgba(108, 92, 231, 0.2);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 120px 40px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--reading));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: #636e72;
+            max-width: 700px;
+            margin: 0 auto 25px;
+        }
+
+        /* 调整：仅保留logo，移除文字 */
+        .institution-badge {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            z-index: 10;
+        }
+
+        .institution-logo {
+            width: 110px; /* 增大logo尺寸 */
+            height: 110px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 修改：从3列改为4列以容纳新模块 */
+            gap: 25px;
+            margin-top: 2rem;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem 1.8rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+            z-index: 2;
+        }
+
+        .app-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .app-icon-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .app-icon {
+            font-size: 2.2rem;
+            transition: all 0.4s ease;
+        }
+
+        .app-card:hover .app-icon-container {
+            transform: scale(1.1);
+        }
+
+        .app-card:hover .app-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .app-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+
+        .app-description {
+            color: #636e72;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+
+        .app-link {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            width: fit-content;
+            margin: 0 auto;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .app-link::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .app-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .app-link:active::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem 2rem;
+            color: #636e72;
+            background: var(--footer-bg);
+            box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.05);
+            margin-top: auto;
+            border-top: 2px solid rgba(108, 92, 231, 0.1);
+            position: relative;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .copyright, .authors {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            padding: 0.3rem 0;
+        }
+
+        .authors:hover {
+            transform: translateY(-1px);
+        }
+
+        /* 模块特定样式 */
+        .game-module .app-icon-container {
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.15), rgba(162, 155, 254, 0.1));
+        }
+        .game-module::before { background: var(--primary); }
+        .game-module .app-link { background: var(--primary); color: white; }
+
+        .quiz-module .app-icon-container {
+            background: linear-gradient(135deg, rgba(0, 184, 148, 0.15), rgba(85, 239, 196, 0.1));
+        }
+        .quiz-module::before { background: var(--secondary); }
+        .quiz-module .app-link { background: var(--secondary); color: white; }
+
+        .reading-module .app-icon-container {
+            background: linear-gradient(135deg, rgba(9, 132, 227, 0.15), rgba(116, 185, 255, 0.1));
+        }
+        .reading-module::before { background: var(--reading); }
+        .reading-module .app-link { background: var(--reading); color: white; }
+
+        /* 新增：听写模块样式 */
+        .dictation-module .app-icon-container {
+            background: linear-gradient(135deg, rgba(253, 121, 168, 0.15), rgba(255, 171, 187, 0.1));
+        }
+        .dictation-module::before { background: var(--dictation); }
+        .dictation-module .app-link { background: var(--dictation); color: white; }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .app-grid {
+                grid-template-columns: repeat(2, 1fr); /* 修改：大屏下2列布局 */
+            }
+        }
+
+        @media (max-width: 900px) {
+            .institution-badge {
+                position: static;
+                transform: none;
+                display: inline-flex;
+                margin-bottom: 25px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            }
+            
+            .hero-title {
+                font-size: 2.2rem;
+            }
+            
+            .institution-logo {
+                width: 70px; /* 小屏幕上适当缩小logo */
+                height: 70px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                margin: 3rem auto 0;
+            }
+            
+            .nav-container {
+                flex-direction: column;
+                gap: 1.2rem;
+            }
+            
+            .main-content {
+                padding: 140px 20px 30px;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+            
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .copyright, .authors {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .app-card {
+                padding: 1.8rem 1.5rem;
+            }
+            
+            .app-icon-container {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .app-icon {
+                font-size: 2rem;
+            }
+            
+            .app-title {
+                font-size: 1.3rem;
+            }
+            
+            .copyright, .authors {
+                font-size: 0.95rem;
+            }
+            
+            .institution-badge {
+                padding: 12px;
+            }
+            
+            .institution-logo {
+                width: 60px; /* 超小屏幕进一步缩小 */
+                height: 60px;
+            }
+        }
+        
+        /* 卡片悬停3D效果 */
+        .app-card {
+            perspective: 1000px;
+        }
+        
+        .card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .app-card:hover .card-inner {
+            transform: rotateY(5deg) rotateX(3deg);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="#" class="website-logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>英语学习中心</span>
+            </a>
+            <div class="nav-links">
+                <a href="teachsoft.html" class="nav-link">单词消消乐</a>
+                <a href="read.html" class="nav-link">课文朗读</a>
+                <a href="suitangxiaoce.html" class="nav-link">智能出题</a>
+                <a href="dictation.html" class="nav-link">单词听写</a> <!-- 新增：导航栏添加听写入口 -->
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section class="hero-section">
+            <!-- 调整：仅保留logo，移除文字 -->
+            <div class="institution-badge">
+                <img src="systemfile/logo.jpg" alt="石狮市进修学校logo" class="institution-logo">
+            </div>
+            
+            <!-- 保持原有标题居中 -->
+            <h1 class="hero-title">发现英语学习的乐趣</h1>
+            <p class="hero-subtitle">通过我们的互动学习工具，提升您的英语词汇、语法和发音能力。寓教于乐，事半功倍！</p>
+        </section>
+
+        <section class="app-grid">
+            <div class="app-card game-module" onclick="location.href='teachsoft.html'">
+                <div class="card-inner">
+                    <div class="app-icon-container">
+                        <div class="app-icon">🎮</div>
+                    </div>
+                    <h2 class="app-title">单词消消乐</h2>
+                    <p class="app-description">
+                        趣味单词配对游戏，支持中英互配和计时挑战模式，轻松记忆单词
+                    </p>
+                    <a href="teachsoft.html" class="app-link">开始游戏</a>
+                </div>
+            </div>
+
+            <div class="app-card reading-module" onclick="location.href='read.html'">
+                <div class="card-inner">
+                    <div class="app-icon-container">
+                        <div class="app-icon">🎧</div>
+                    </div>
+                    <h2 class="app-title">课文朗读</h2>
+                    <p class="app-description">
+                        英语课文跟读系统，支持语音朗读、跟读练习和进度追踪
+                    </p>
+                    <a href="read.html" class="app-link">开始朗读</a>
+                </div>
+            </div>
+
+            <div class="app-card quiz-module" onclick="location.href='suitangxiaoce.html'">
+                <div class="card-inner">
+                    <div class="app-icon-container">
+                        <div class="app-icon">📚</div>
+                    </div>
+                    <h2 class="app-title">智能出题系统</h2>
+                    <p class="app-description">
+                        个性化题库训练，支持随机抽题、错题收集和智能推荐
+                    </p>
+                    <a href="suitangxiaoce.html" class="app-link">开始测试</a>
+                </div>
+            </div>
+
+            <!-- 新增：单词听写练习模块 -->
+            <div class="app-card dictation-module" onclick="location.href='listenword.html'">
+                <div class="card-inner">
+                    <div class="app-icon-container">
+                        <div class="app-icon">✍️</div>
+                    </div>
+                    <h2 class="app-title">单词听写练习</h2>
+                    <p class="app-description">
+                        智能听写系统，支持音标/中文提示、自动发音、答案校验和批量听写
+                    </p>
+                    <a href="dictation.html" class="app-link">开始听写</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="copyright">
+                <i class="fa fa-copyright"></i>
+                <span>2025 版权所有 | 石狮市教师进修学校</span>
+            </div>
+            <div class="authors">
+                <i class="fa fa-user-pen"></i>
+                <span>作者：石狮市第二中学 洪振芳；指导老师：李涌</span>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        document.querySelectorAll('.app-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const cardRect = card.getBoundingClientRect();
+                const x = e.clientX - cardRect.left;
+                const y = e.clientY - cardRect.top;
+                
+                const centerX = cardRect.width / 2;
+                const centerY = cardRect.height / 2;
+                
+                const rotateY = (x - centerX) / 30;
+                const rotateX = (centerY - y) / 30;
+                
+                card.querySelector('.card-inner').style.transform = `rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.querySelector('.card-inner').style.transform = 'rotateY(0) rotateX(0)';
+            });
+        });
+    </script>
+</body>
+</html>

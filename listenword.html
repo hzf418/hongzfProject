@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语单词听写练习</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary: #2a86ff;
+            --primary-light: #4facfe;
+            --primary-dark: #1e5799;
+            --secondary: #ff7e5f;
+            --success: #43e97b;
+            --warning: #ffd26f;
+            --gray-light: #f5f9ff;
+            --gray: #e6f2ff;
+            --gray-dark: #d1ebff;
+            --text-main: #2c3e50;
+            --text-secondary: #5a7d9a;
+            --text-light: #6c757d;
+            --shadow-sm: 0 2px 6px rgba(42, 134, 255, 0.1);
+            --shadow: 0 3px 10px rgba(42, 134, 255, 0.15);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-full: 40px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 50%, #d1ebff 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background-attachment: fixed;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--gray-dark);
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary) 50%, var(--primary-dark) 100%);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gray);
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(42, 134, 255, 0.1);
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .word-list {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+            padding: 8px;
+            background-color: var(--gray-light);
+            border-radius: var(--radius);
+            border: 1px solid var(--gray);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .word-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .word-list::-webkit-scrollbar-track {
+            background: var(--gray);
+            border-radius: 8px;
+        }
+
+        .word-list::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 8px;
+        }
+
+        .word-list-btn {
+            background: white;
+            border: 1px solid var(--gray);
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .word-list-btn.active {
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            border: none;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .word-list-btn:hover:not(.active) {
+            background: var(--gray-light);
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .word-list .loading-state {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            padding: 8px 15px;
+            font-size: 0.95rem;
+        }
+        
+        .word-card {
+            background: linear-gradient(135deg, var(--gray-light) 0%, white 100%);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid var(--gray);
+            position: relative;
+        }
+        
+        .word-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+        
+        .emoji {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            display: block;
+            transition: var(--transition);
+        }
+        
+        .word-card:hover .emoji {
+            transform: scale(1.05);
+        }
+        
+        .word-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .word-number {
+            font-size: 0.95rem;
+            color: var(--primary);
+            font-weight: 600;
+            background: white;
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            width: fit-content;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .phonetic {
+            font-size: 2rem;
+            color: var(--secondary);
+            font-family: 'Arial', sans-serif;
+            background: white;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            width: fit-content;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .meaning {
+            font-size: 1.35rem;
+            color: var(--text-main);
+            font-weight: 500;
+            line-height: 1.4;
+            background: white;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            width: fit-content;
+            transition: var(--transition);
+            max-width: 90%;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .hidden {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .word-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.35rem;
+            text-align: center;
+            border: 2px solid var(--gray);
+            border-radius: var(--radius);
+            margin: 15px 0;
+            transition: var(--transition);
+            background: white;
+            box-shadow: var(--shadow-sm);
+            color: var(--text-main);
+        }
+        
+        .word-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(42, 134, 255, 0.15);
+            background: white;
+        }
+        
+        .word-input:disabled {
+            background: var(--gray-light);
+            color: var(--text-light);
+            cursor: not-allowed;
+            border-color: var(--gray-dark);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 18px;
+            font-size: 1rem;
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            box-shadow: var(--shadow-sm);
+            gap: 6px;
+            min-width: 80px;
+        }
+        
+        .btn i {
+            font-size: 0.95rem;
+        }
+        
+        .btn-prev {
+            background: linear-gradient(135deg, #8a939b 0%, #6c757d 100%);
+            color: white;
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+        }
+        
+        .btn-auto {
+            background: linear-gradient(135deg, #fbc2eb 0%, #a18cd1 100%);
+            color: white;
+        }
+        
+        .btn-check {
+            background: linear-gradient(135deg, var(--success) 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .btn-audio {
+            background: linear-gradient(135deg, #fad0c4 0%, #ff9a9e 100%);
+            color: white;
+        }
+        
+        .btn-mode {
+            background: linear-gradient(135deg, var(--warning) 0%, #ffa96b 100%);
+            color: white;
+            position: relative;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .auto-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 18px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .interval-control {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray);
+        }
+        
+        .interval-control label {
+            margin-right: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        .interval-control input {
+            width: 50px;
+            padding: 6px;
+            border: 1px solid var(--gray);
+            border-radius: var(--radius-sm);
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+        
+        .interval-control input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(42, 134, 255, 0.1);
+        }
+        
+        .progress {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            background: white;
+            padding: 8px 20px;
+            border-radius: var(--radius-full);
+            display: inline-block;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 12px 18px;
+            border-radius: var(--radius);
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            display: none;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        
+        .correct {
+            background: linear-gradient(135deg, #d4ffd4 0%, #e8ffe8 100%);
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        
+        .incorrect {
+            background: linear-gradient(135deg, #ffd4d4 0%, #ffe8e8 100%);
+            color: #c62828;
+            border: 1px solid #ffabab;
+        }
+        
+        .word-display {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 12px 0;
+            min-height: 50px;
+            text-shadow: 0 2px 4px rgba(42, 134, 255, 0.1);
+            transition: var(--transition);
+        }
+        
+        .audio-controls {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .audio-btn {
+            background: linear-gradient(135deg, #fad0c4 0%, #ff9a9e 100%);
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            margin: 0 8px;
+        }
+        
+        .audio-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow);
+        }
+        
+        .audio-btn:active {
+            transform: scale(0.95);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .audio-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .audio-icon {
+            font-size: 1.6rem;
+            color: white;
+        }
+        
+        .mode-selector {
+            position: relative;
+            display: inline-block;
+            flex: 1;
+        }
+        
+        .mode-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            z-index: 100;
+            overflow: hidden;
+            margin-bottom: 8px;
+            border: 1px solid var(--gray);
+        }
+        
+        .mode-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .mode-option {
+            padding: 12px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 1px solid var(--gray-light);
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        .mode-option:last-child {
+            border-bottom: none;
+        }
+        
+        .mode-option:hover {
+            background: var(--gray-light);
+            color: var(--primary);
+        }
+        
+        .mode-option.active {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+        }
+        
+        .mode-indicator {
+            font-size: 0.85rem;
+            margin-left: 6px;
+            opacity: 0.9;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--gray);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #loading p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            padding: 10px 15px;
+            border-top: 1px solid var(--gray);
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        footer p {
+            margin: 4px 0;
+        }
+        
+        footer .author {
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        @media (max-width: 700px) {
+            .container {
+                padding: 15px 10px;
+                margin-top: 10px;
+            }
+            
+            h1 {
+                font-size: 1.9rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .phonetic {
+                font-size: 1.8rem;
+                padding: 10px 20px;
+            }
+            
+            .meaning {
+                font-size: 1.25rem;
+                padding: 8px 16px;
+            }
+            
+            .word-input {
+                font-size: 1.25rem;
+                padding: 12px;
+                margin: 12px 0;
+            }
+            
+            .controls {
+                gap: 6px;
+            }
+            
+            .btn {
+                min-width: 48%;
+                margin-bottom: 8px;
+                padding: 10px 15px;
+                font-size: 0.95rem;
+            }
+            
+            .auto-controls {
+                gap: 8px;
+                width: 100%;
+            }
+            
+            .interval-control {
+                width: 100%;
+                justify-content: center;
+                padding: 8px 12px;
+            }
+            
+            .mode-dropdown {
+                width: 100%;
+            }
+            
+            .word-info {
+                gap: 12px;
+            }
+            
+            .word-list {
+                gap: 6px;
+                padding: 6px;
+            }
+            
+            .word-list-btn {
+                padding: 7px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .audio-btn {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .audio-icon {
+                font-size: 1.5rem;
+            }
+            
+            footer {
+                font-size: 0.85rem;
+                padding: 8px 12px;
+            }
+        }
+        
+        .empty-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+            padding: 12px 15px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载指示器 -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>正在加载单词数据...</p>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-pencil-alt"></i> 英语单词听写练习</h1>
+            <p class="subtitle">选择单词列表开始练习</p>
+        </header>
+        
+        <!-- 单词列表导航 -->
+        <div class="word-list" id="wordListNav">
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>正在加载单词列表...</p>
+            </div>
+        </div>
+        
+        <div class="word-card">
+            <span class="emoji" id="emoji">📚</span>
+            
+            <div class="word-info">
+                <div class="word-number">单词 <span id="current-word">1</span> / <span id="total-words">0</span></div>
+                <div class="phonetic" id="phonetic-display">请选择单词列表</div>
+                <div class="meaning" id="meaning-display">选择单词列表开始练习</div>
+            </div>
+            
+            <div class="audio-controls">
+                <button class="audio-btn" id="play-audio" disabled>
+                    <span class="audio-icon">🔊</span>
+                </button>
+            </div>
+            
+            <input type="text" class="word-input" id="word-input" placeholder="在此输入英文单词" autocomplete="off" disabled>
+            
+            <div class="word-display" id="word-display"></div>
+            
+            <div class="result" id="result"></div>
+            
+            <div class="controls">
+                <button class="btn btn-prev" id="prev-btn" disabled>
+                    <i class="fas fa-step-backward"></i>
+                    <span>上一个</span>
+                </button>
+                <button class="btn btn-audio" id="audio-btn" disabled>
+                    <i class="fas fa-volume-up"></i>
+                    <span>发音</span>
+                </button>
+                <button class="btn btn-check" id="check-btn" disabled>
+                    <i class="fas fa-check"></i>
+                    <span>检查</span>
+                </button>
+                <div class="mode-selector">
+                    <button class="btn btn-mode" id="mode-btn" disabled>
+                        <span>模式</span>
+                        <span class="mode-indicator" id="mode-indicator">音标+中文</span>
+                    </button>
+                    <div class="mode-dropdown" id="mode-dropdown">
+                        <div class="mode-option active" data-mode="both">音标 + 中文</div>
+                        <div class="mode-option" data-mode="phonetic">仅音标</div>
+                        <div class="mode-option" data-mode="meaning">仅中文</div>
+                    </div>
+                </div>
+                <button class="btn btn-next" id="next-btn" disabled>
+                    <span>下一个</span>
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+            
+            <div class="auto-controls">
+                <button class="btn btn-auto" id="auto-btn" disabled>
+                    <i class="fas fa-play-circle"></i>
+                    <span>自动播放</span>
+                </button>
+                <div class="interval-control">
+                    <label for="interval">间隔(秒):</label>
+                    <input type="number" id="interval" min="2" max="10" value="5">
+                </div>
+            </div>
+            
+            <div class="progress" id="progress">进度: 0/0</div>
+        </div>
+    </div>
+    
+    <!-- 底部版权信息 -->
+    <footer>
+        <p>英语单词听写练习程序 &copy; 2025</p>
+        <p class="author">石狮市第二中学 | 洪振芳；指导老师：李涌</p>
+    </footer>
+
+    <script>
+        // 配置
+        const CONFIG = {
+            wordsDir: "words/",      // 单词文件存放目录
+            wordsListFile: "index.json", // 单词列表文件
+            debugMode: false
+        };
+
+        // DOM元素
+        const emojiDisplay = document.getElementById('emoji');
+        const phoneticDisplay = document.getElementById('phonetic-display');
+        const meaningDisplay = document.getElementById('meaning-display');
+        const wordInput = document.getElementById('word-input');
+        const wordDisplay = document.getElementById('word-display');
+        const resultDisplay = document.getElementById('result');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const checkBtn = document.getElementById('check-btn');
+        const autoBtn = document.getElementById('auto-btn');
+        const audioBtn = document.getElementById('audio-btn');
+        const playAudioBtn = document.getElementById('play-audio');
+        const currentWordSpan = document.getElementById('current-word');
+        const totalWordsSpan = document.getElementById('total-words');
+        const progressSpan = document.getElementById('progress');
+        const intervalInput = document.getElementById('interval');
+        const modeBtn = document.getElementById('mode-btn');
+        const modeDropdown = document.getElementById('mode-dropdown');
+        const modeIndicator = document.getElementById('mode-indicator');
+        const modeOptions = document.querySelectorAll('.mode-option');
+        const wordListNav = document.getElementById('wordListNav');
+        const loadingIndicator = document.getElementById('loading');
+
+        // 状态变量
+        let currentIndex = 0;
+        let autoPlayInterval;
+        let isAutoPlaying = false;
+        let speechSynth = window.speechSynthesis;
+        let currentMode = 'both'; // 'both', 'phonetic', 'meaning'
+        let currentWordList = -1; // 当前单词列表索引
+        let wordLists = []; // 单词列表数据
+        let words = []; // 当前单词列表
+
+        // 初始化
+        async function init() {
+            // 加载单词列表
+            await loadWordLists();
+            
+            // 点击页面其他地方关闭下拉菜单
+            document.addEventListener('click', function(e) {
+                if (!modeBtn.contains(e.target) && !modeDropdown.contains(e.target)) {
+                    modeDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // 加载单词列表
+        async function loadWordLists() {
+            try {
+                loadingIndicator.style.display = 'flex';
+                
+                // 加载单词列表文件
+                const response = await fetch(`${CONFIG.wordsDir}${CONFIG.wordsListFile}`);
+                const wordListFiles = await response.json();
+                
+                if (!Array.isArray(wordListFiles) || wordListFiles.length === 0) {
+                    throw new Error('单词列表为空或格式不正确');
+                }
+                
+                // 逐个加载单词列表内容
+                for (const file of wordListFiles) {
+                    try {
+                        const wordListResponse = await fetch(`${CONFIG.wordsDir}${file}`);
+                        const text = await wordListResponse.text();
+                        const wordList = parseWordListContent(text, file);
+                        wordLists.push(wordList);
+                    } catch (error) {
+                        console.error(`加载单词列表 ${file} 失败:`, error);
+                    }
+                }
+                
+                updateWordListNav();
+                if (wordLists.length > 0) {
+                    loadWordList(0);
+                } else {
+                    wordListNav.innerHTML = '<div class="empty-nav"><i class="fas fa-file-alt"></i><p>没有找到可用的单词列表</p></div>';
+                }
+            } catch (error) {
+                console.error('加载单词列表失败:', error);
+                wordListNav.innerHTML = '<div class="empty-nav"><i class="fas fa-exclamation-circle"></i><p>加载单词列表失败，请检查配置</p></div>';
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // 解析单词列表内容 - 使用更严格的分隔方式
+        function parseWordListContent(content, fileName) {
+            const lines = content.split('\n');
+            const wordList = {
+                id: `wordlist-${wordLists.length}`,
+                title: fileName.replace(/\.txt$/, ''),
+                words: [],
+                fileName: fileName
+            };
+            
+            let inHeader = true;
+            let titleSet = false;
+            
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                
+                if (trimmedLine === '') continue;
+                
+                // 标题行
+                if (inHeader && trimmedLine.startsWith('# ')) {
+                    wordList.title = trimmedLine.substring(2).trim();
+                    titleSet = true;
+                    continue;
+                }
+                
+                // 分隔符行，结束头部
+                if (inHeader && trimmedLine === '---') {
+                    inHeader = false;
+                    continue;
+                }
+                
+                // 单词行 - 使用更严格的格式：单词 /音标/ 中文意思 /表情
+                if (!inHeader || !titleSet) {
+                    // 使用更严格的正则表达式匹配
+                    const match = trimmedLine.match(/^([a-zA-Z]+)\s+\/([^/]+)\/\s+([^/]+?)\s*\/([^\s]+)$/);
+                    
+                    if (match && match.length === 5) {
+                        wordList.words.push({
+                            word: match[1].trim(),
+                            phonetic: `/${match[2].trim()}/`,
+                            meaning: match[3].trim(),
+                            emoji: match[4].trim()
+                        });
+                    } else {
+                        // 如果没有表情，尝试匹配没有表情的格式
+                        const simpleMatch = trimmedLine.match(/^([a-zA-Z]+)\s+\/([^/]+)\/\s+([^/]+)$/);
+                        if (simpleMatch && simpleMatch.length === 4) {
+                            wordList.words.push({
+                                word: simpleMatch[1].trim(),
+                                phonetic: `/${simpleMatch[2].trim()}/`,
+                                meaning: simpleMatch[3].trim(),
+                                emoji: "📚" // 默认表情
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // 如果没有设置标题，使用文件名
+            if (!titleSet) {
+                wordList.title = fileName.replace(/\.txt$/, '');
+            }
+            
+            return wordList;
+        }
+
+        // 更新单词列表导航
+        function updateWordListNav() {
+            wordListNav.innerHTML = '';
+            
+            if (wordLists.length === 0) {
+                wordListNav.innerHTML = '<div class="empty-nav"><i class="fas fa-file-alt"></i><p>没有可用的单词列表</p></div>';
+                return;
+            }
+            
+            wordLists.forEach((wordList, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `word-list-btn${idx === currentWordList ? ' active' : ''}`;
+                btn.dataset.wordList = idx;
+                btn.textContent = wordList.title;
+                
+                btn.addEventListener('click', () => {
+                    loadWordList(idx);
+                });
+                
+                wordListNav.appendChild(btn);
+            });
+        }
+
+        // 加载单词列表
+        function loadWordList(wordListIndex) {
+            if (wordListIndex >= wordLists.length) return;
+            
+            currentWordList = wordListIndex;
+            words = wordLists[wordListIndex].words;
+            
+            // 更新导航激活状态
+            const wordListBtns = document.querySelectorAll('.word-list-btn');
+            wordListBtns.forEach((btn, idx) => {
+                btn.classList.remove('active');
+                if (idx === wordListIndex) btn.classList.add('active');
+            });
+            
+            // 更新标题
+            document.querySelector('.subtitle').textContent = wordLists[wordListIndex].title;
+            
+            // 重置状态
+            currentIndex = 0;
+            totalWordsSpan.textContent = words.length;
+            
+            // 启用控制按钮
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
+            checkBtn.disabled = false;
+            autoBtn.disabled = false;
+            audioBtn.disabled = false;
+            modeBtn.disabled = false;
+            wordInput.disabled = false;
+            playAudioBtn.disabled = false;
+            
+            // 更新显示
+            updateDisplay();
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            if (words.length === 0) return;
+            
+            const currentWord = words[currentIndex];
+            emojiDisplay.textContent = currentWord.emoji;
+            phoneticDisplay.textContent = currentWord.phonetic;
+            meaningDisplay.textContent = currentWord.meaning;
+            currentWordSpan.textContent = currentIndex + 1;
+            progressSpan.textContent = `进度: ${currentIndex + 1}/${words.length}`;
+            
+            // 根据当前模式显示/隐藏内容
+            updateModeDisplay();
+            
+            // 清空输入和结果
+            wordInput.value = '';
+            wordDisplay.textContent = '';
+            resultDisplay.style.display = 'none';
+            
+            // 聚焦输入框
+            wordInput.focus();
+        }
+
+        // 根据当前模式更新显示
+        function updateModeDisplay() {
+            // 重置所有显示
+            phoneticDisplay.classList.remove('hidden');
+            meaningDisplay.classList.remove('hidden');
+            
+            // 根据模式隐藏相应内容
+            if (currentMode === 'phonetic') {
+                meaningDisplay.classList.add('hidden');
+            } else if (currentMode === 'meaning') {
+                phoneticDisplay.classList.add('hidden');
+            }
+        }
+
+        // 设置模式
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // 更新按钮文本
+            let modeText = '';
+            if (mode === 'both') {
+                modeText = '音标+中文';
+            } else if (mode === 'phonetic') {
+                modeText = '仅音标';
+            } else if (mode === 'meaning') {
+                modeText = '仅中文';
+            }
+            modeIndicator.textContent = modeText;
+            
+            // 更新选项高亮
+            modeOptions.forEach(option => {
+                option.classList.toggle('active', option.dataset.mode === mode);
+            });
+            
+            // 更新显示
+            updateModeDisplay();
+            
+            // 关闭下拉菜单
+            modeDropdown.classList.remove('show');
+        }
+
+        // 播放单词发音
+        function playWordAudio() {
+            if (speechSynth.speaking) {
+                speechSynth.cancel();
+            }
+            
+            const currentWord = words[currentIndex];
+            const utterance = new SpeechSynthesisUtterance(currentWord.word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            utterance.pitch = 1;
+            
+            speechSynth.speak(utterance);
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            const userAnswer = wordInput.value.trim().toLowerCase();
+            const correctAnswer = words[currentIndex].word.toLowerCase();
+            
+            wordDisplay.textContent = words[currentIndex].word;
+            resultDisplay.style.display = 'block';
+            
+            if (userAnswer === correctAnswer) {
+                resultDisplay.textContent = '正确！太棒了！';
+                resultDisplay.className = 'result correct';
+            } else {
+                resultDisplay.textContent = `不正确，正确答案是: ${words[currentIndex].word}`;
+                resultDisplay.className = 'result incorrect';
+            }
+        }
+
+        // 下一个单词
+        function nextWord() {
+            currentIndex = (currentIndex + 1) % words.length;
+            updateDisplay();
+        }
+
+        // 上一个单词
+        function prevWord() {
+            currentIndex = (currentIndex - 1 + words.length) % words.length;
+            updateDisplay();
+        }
+
+        // 切换自动播放
+        function toggleAutoPlay() {
+            if (isAutoPlaying) {
+                stopAutoPlay();
+            } else {
+                startAutoPlay();
+            }
+        }
+
+        // 开始自动播放
+        function startAutoPlay() {
+            const interval = parseInt(intervalInput.value) * 1000;
+            autoPlayInterval = setInterval(() => {
+                playWordAudio();
+                setTimeout(nextWord, 1000);
+            }, interval);
+            autoBtn.innerHTML = '<i class="fas fa-stop-circle"></i><span>停止播放</span>';
+            isAutoPlaying = true;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            checkBtn.disabled = true;
+            audioBtn.disabled = true;
+            modeBtn.disabled = true;
+            playAudioBtn.disabled = true;
+        }
+
+        // 停止自动播放
+        function stopAutoPlay() {
+            clearInterval(autoPlayInterval);
+            autoBtn.innerHTML = '<i class="fas fa-play-circle"></i><span>自动播放</span>';
+            isAutoPlaying = false;
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
+            checkBtn.disabled = false;
+            audioBtn.disabled = false;
+            modeBtn.disabled = false;
+            playAudioBtn.disabled = false;
+        }
+
+        // 事件监听
+        prevBtn.addEventListener('click', prevWord);
+        nextBtn.addEventListener('click', nextWord);
+        checkBtn.addEventListener('click', checkAnswer);
+        autoBtn.addEventListener('click', toggleAutoPlay);
+        audioBtn.addEventListener('click', playWordAudio);
+        playAudioBtn.addEventListener('click', playWordAudio);
+        
+        // 模式按钮事件
+        modeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            modeDropdown.classList.toggle('show');
+        });
+        
+        // 模式选项事件
+        modeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                setMode(this.dataset.mode);
+            });
+        });
+
+        // 按回车键检查答案
+        wordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
