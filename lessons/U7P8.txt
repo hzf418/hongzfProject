@@ -1,0 +1,14 @@
+# U7P8
+@image=img/U7P8.png
+---
+Li Xiang is a smart shopper. (李翔是个精明的购物者。)
+He often shops in the supermarket. (他常去超市购物。)
+Things there are not expensive, and he can make different choices. (那儿的商品不贵，他能做出不同选择。)
+He always makes a shopping list and only buys things on the list. (他总会列购物清单，只买清单上的物品。)
+This can help him save time and money as well. (这也有助于他节省时间和金钱。)
+He also likes to look for sales, so he can buy things at good prices. (他也爱找促销，这样能买到实惠商品。)
+Li Xiang is very careful when he is doing shopping. (李翔购物时十分细心。)
+He always checks the price and date before he makes a choice. (做选择前，他总会检查价格和日期。)
+And when he is making payments, he checks everything again. (付款时，他会再次检查所有物品。)
+He is also very careful not to waste money. (他也很注意不浪费钱。)
+For example, if he can share something with his friends, he never wastes money on the same thing. (比如，若能和朋友共用某样东西，他就不会在同样物品上浪费钱。)

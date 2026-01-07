@@ -1,0 +1,13 @@
+# U7P4
+@image=img/U7P4.png
+---
+ Li Xiang, what are you doing on the computer? (妈妈：李翔，你在电脑上做什么呢？)
+ I’m shopping for the school party. (李翔：我在为学校派对买东西。)
+ What do you need to buy? (妈妈：你需要买什么？)
+ I’m looking for a new shirt. What about this blue one? (李翔：我在找一件新衬衫。这件蓝色的怎么样？)
+ It’s great for the party. How much is it? (妈妈：很适合派对。多少钱？)
+ It’s 65 yuan. Everything is on sale. Look at this pair of shoes. It is 180 yuan. (李翔：65 元。所有东西都在促销。看这双鞋，180 元。)
+ Well, that’s a lot of money. I don’t think you need it. You have new shoes. Why not buy a pair of trousers? (妈妈：嗯，太贵了。我觉得你不需要。你有新鞋了。为什么不买条裤子呢？)
+ Good idea. But I don’t like the trousers in this online shop. (李翔：好主意。但我不喜欢这家网店的裤子。)
+ How about going to the shopping mall this Sunday? (妈妈：这个周日去购物中心怎么样？)
+ OK. (李翔：好的。)

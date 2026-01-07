@@ -1,0 +1,8 @@
+# U7P10
+@image=img/U7P10.png
+---
+Xiao Lin often goes shopping with her mom in the supermarket. (Xiao Lin 经常和她妈妈在超市购物。)
+Today, her mom needs to buy a bag of salt, three bottles of milk, two packets of chicken, and a kilo of tomatoes. (今天，她妈妈需要买一袋盐、三瓶牛奶、两包鸡肉和一公斤西红柿。)
+Xiao Lin also needs something for school. (Xiao Lin 也需要一些上学用的东西。)
+She takes a pair of scissors and two sets of colored pencils. (她拿了一把剪刀和两套彩色铅笔。)
+Sometimes, Xiao Lin’s little brother also goes to the supermarket with them, and his mother usually buys a box of juice for him. (有时候，Xiao Lin 的小弟弟也会和他们一起去超市，他妈妈通常会给他买一盒果汁。)
