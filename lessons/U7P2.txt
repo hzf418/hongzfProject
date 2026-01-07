@@ -1,4 +1,4 @@
-# U7P2
+# 模板
 @image=img/U7P2.png
 ---
 I need some milk. Would you like to go to the supermarket with me? (我需要一些牛奶。你愿意和我一起去超市吗？)
